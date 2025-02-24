@@ -33,26 +33,23 @@ public class VehicleDao {
     public List<Vehicle> findAll() {
         return session.createQuery("from Vehicle", Vehicle.class).list();
     }
-    public void removeVehicleByLicensePlate(String licensePlate) {
+    public void removeVehicleByLicensePlate(String license_plate_no) {
         Transaction transaction = null;
         try {
             transaction = session.beginTransaction();
-            Query<Vehicle> query = session.createQuery("FROM Vehicle WHERE licensePlate = :licensePlate", Vehicle.class);
-            query.setParameter("licensePlate", licensePlate);
+            Query<Vehicle> query = session.createQuery("FROM Vehicle WHERE license_plate_no = :license_plate_no", Vehicle.class);
+            query.setParameter("license_plate_no", license_plate_no);
             Vehicle vehicle = query.uniqueResult();
 
             if (vehicle != null) {
                 session.delete(vehicle);
-                System.out.println("Vehicle with license plate " + licensePlate + " has been removed.");
+                System.out.println("Vehicle with license plate " + license_plate_no + " has been removed.");
             } else {
-                System.out.println("No vehicle found with license plate " + licensePlate);
+                System.out.println("No vehicle found with license plate " + license_plate_no);
             }
 
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
             e.printStackTrace();
         }
     }

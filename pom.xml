@@ -41,6 +41,7 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.32</version>
         </dependency>
+        
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -51,5 +52,10 @@
 <artifactId>validation-api</artifactId>
 <version>2.0.1.Final</version>
 </dependency>
+        <dependency>
+        	<groupId>com.project</groupId>
+        	<artifactId>mockit1</artifactId>
+        	<version>0.0.1-SNAPSHOT</version>
+        </dependency>
   </dependencies>
 </project>

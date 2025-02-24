@@ -5,8 +5,13 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.junit.jupiter.api.Test;
+
 import com.vehicle.Parking.User;
 import com.vehicle.Parking.Vehicle;
 import com.vehicle.dao.*;
@@ -25,14 +30,15 @@ public class App {
             Scanner scan = new Scanner(System.in);
 
             while (true) {
-                System.out.println("1. Register for Your Vehicle parking spot\n2. Login to Your Credential\n3. Exit from page");
+            	System.out.println("\t\t\t~ ~ ~WELCOME TO PAKING SEVA PORTAL~ ~ ~");
+                System.out.println("\n\t1. Register for Your Vehicle parking spot\n\t2. Login to Your Credential\n\t3. Exit from page");
                 int choice = scan.nextInt();
                 switch (choice) {
                     case 1:
-                        registerUser(scan, userDao);
+                        registerUser(userDao);
                         break;
                     case 2:
-                        loginUser(scan, userDao, vehicleDao,vd );
+                        loginUser(userDao, vehicleDao,vd );
                         break;
                     case 3:
                         System.exit(0);
@@ -48,27 +54,74 @@ public class App {
         }
     }
 
-    private static void registerUser(Scanner scan, UserDao userDAO) {
-        System.out.print("Enter username: ");
-        String username = scan.next();
-        System.out.print("Enter password: ");
-        String password = scan.next(); 
-        System.out.print("Enter email: ");
-        String email = scan.next();
-        System.out.print("Enter phone number: ");
-        String phoneNumber = scan.next();
+    private static void registerUser(UserDao userDAO) {
+        Scanner scan = new Scanner(System.in);
 
-        User user = new User(username, password, email, phoneNumber);
+        String username = null;
+        String password = null;
+        String email = null;
+        String phoneNumber = null;
+
+        
+        while (true) {
+            System.out.print("Enter username \n Note:3-20 characters only: ");
+            username = scan.next();
+            if (username.matches("^[a-zA-Z0-9]{3,20}$")) {
+                break;
+            } else {
+                System.out.println("Invalid username.");
+            }
+        }
+
+   
+        while (true) {
+            System.out.print("Enter password \n Note:minimum of 8 as chracter:");
+            password=scan.next();
+            if (password.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$")) {
+                break;
+            } else {
+                System.out.println("Invalid password.");
+            }
+        }
+
+       
+        Pattern emailPattern = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+        while (true) {
+            System.out.print("Enter email: ");
+            email = scan.next();
+            Matcher emailMatcher = emailPattern.matcher(email);
+            if (emailMatcher.matches()) {
+                break;
+            } else {
+                System.out.println("Invalid email");
+            }
+        }
+
+        
+        while (true) {
+            System.out.print("Enter phone number: ");
+            phoneNumber = scan.next();
+            if (phoneNumber.matches("^[0-9]{10}$")) {
+                break;
+            } else {
+                System.out.println("Invalid phone number");
+            }
+        }
+        User user = new User();
         user.setUsername(username);
         user.setPassword(password); 
         user.setEmail(email);
         user.setPhone_number(phoneNumber);
-        userDAO.saveUser(user); 
+
+        // Save the user
+        userDAO.saveUser(user);
         System.out.println("User registered successfully.");
     }
 
-    private static void loginUser(Scanner scan, UserDao userDAO, VehicleDao vehicleDao, 
+
+    private static void loginUser( UserDao userDAO, VehicleDao vehicleDao, 
             VehicleDisplay vd) {
+    	    Scanner scan = new Scanner(System.in);
             System.out.print("Enter username: ");
             String username = scan.next();
 
@@ -90,15 +143,15 @@ System.out.println("Customer Dashboard");
 Scanner scan = new Scanner(System.in);
 
 while (true) {
-System.out.println("1. Enter new vehicle\n2. Exit a vehicle\n3. View parked vehicles\n4. View parking layout\n5. Logout");
+System.out.println("\n\t1. Enter new vehicle\n\t2. Exit a vehicle\n\t3. View parked vehicles\n\t4. View parking layout\n\t5. Logout");
 int choice = scan.nextInt();
 
 switch (choice) {
 case 1:
-handleVehicleEntry(scan, vehicleDao, vd);
+handleVehicleEntry(vehicleDao, vd);
 break;
 case 2:
-handleVehicleExit(scan, vehicleDao, vd);
+handleVehicleExit(vehicleDao, vd);
 break;
 case 3:
 viewParkedVehicles(vehicleDao);
@@ -107,24 +160,25 @@ case 4:
 vd.display(); 
 break;
 case 5:
-return; // Logout
+return; 
 default:
 System.out.println("Invalid choice.");
 }
 }
 }
 
-    private static void handleVehicleEntry(Scanner scan, VehicleDao vehicleDao, VehicleDisplay vd) {
-        System.out.println("Enter vehicle type ('#' for car, '$' for two-wheeler): ");
+    private static void handleVehicleEntry( VehicleDao vehicleDao, VehicleDisplay vd) {
+        
+    	Scanner scan = new Scanner(System.in);
+    	System.out.println("Enter vehicle type ('#' for car, '$' for two-wheeler): ");
         char type = scan.next().charAt(0);
-        
-        
+
         if (type != '#' && type != '$') {
             System.out.println("Invalid vehicle type. Please enter '#' for car or '$' for two-wheeler.");
             return;
         }
 
-       
+        
         Point locate = vd.allocate(type);
         if (locate.x == -1) {
             System.out.println("Sorry, all parking spaces are full.");
@@ -132,60 +186,73 @@ System.out.println("Invalid choice.");
         }
         System.out.print("Enter vehicle color: ");
         String color = scan.next();
-       
-        System.out.print("Enter vehicle number (e.g., GJ01-HN-4561): ");
-        String vehNo = scan.next();
         
-        System.out.print("Enter owner's name: ");
-        scan.nextLine(); 
-        String ownerName = scan.nextLine();
-
-        System.out.print("Enter owner's phone number: ");
-        String phoneNumber = scan.next();
+        String vehNo;
+        while (true) {
+            System.out.print("Enter vehicle number (e.g., KA-18-2354): ");
+            vehNo = scan.next();
+            if (vehNo.matches("^[A-Z]{2}-\\d{2}-\\d{4}$")) {  
+                break;
+            } else {
+                System.out.println("Invalid vehicle number format. Please use the format: KA-18-2354.");
+            }
+        }
 
        
+        System.out.print("Enter owner's name: ");
+        scan.nextLine();
+        String ownerName = scan.nextLine();
+        
+        
+        String phoneNumber;
+        while (true) {
+            System.out.print("Enter owner's phone number (10 digits): ");
+            phoneNumber = scan.next();
+            if (phoneNumber.matches("^[0-9]{10}$")) {
+                break;
+            } else {
+                System.out.println("Invalid phone number. Please enter 10 digits (numbers only).");
+            }
+        }
+
+      
         Vehicle vehicle = new Vehicle();
         vehicle.setType(type == '#' ? "Car" : "Bike");
         vehicle.setLicense_plate_no(vehNo);
         vehicle.setOwner_name(ownerName);
         vehicle.setColor(color);
-        
-        
-       
         vehicleDao.saveVehicle(vehicle);
-
-       
+    
+        System.out.println("Vehicle parked at location: [" + locate.x + ", " + locate.y + "]");
         logVehicleEntry(ownerName, vehNo, locate);
+        System.out.print("Your vehicle parking spot available to use!!\n");
     }
 
-    private static void handleVehicleExit(Scanner scan, VehicleDao vehicleDao, VehicleDisplay vd) {
-    	vd.display();
-        System.out.println("Enter the coordinates of the parking spot to exit (e.g., x y): ");
-        
+    private static void handleVehicleExit(VehicleDao vehicleDao, VehicleDisplay vd) {
+    	Scanner scan = new Scanner(System.in);
+        vd.display();
+        System.out.println("Enter the x coordinate of the parking spot to exit: ");
         int x = scan.nextInt();
+        System.out.println("Enter the y coordinate of the parking spot to exit: ");
         int y = scan.nextInt();
-        
-        Point locate = new Point();
-        locate.x = x; 
-        locate.y = y; 
 
-        boolean removed = vd.remove(locate); 
+        Point locate = new Point();
+        locate.x = 2 * (x - 1) + 1;  
+        locate.y = 2 * (y - 1) + 1;
+        System.out.println("Removing the Vehicle from : [" + locate.x + ", " + locate.y + "]");
+        boolean removed = vd.remove(locate);
 
         if (removed) {
             System.out.print("Enter vehicle number to exit: ");
-            String exitingVehicleNo = scan.next();
+            String license_plate_no = scan.next();
+            vehicleDao.removeVehicleByLicensePlate(license_plate_no);
 
-            
-            logVehicleExit(exitingVehicleNo);
-            
-           
-            vehicleDao.removeVehicleByLicensePlate(exitingVehicleNo);
-            
-            System.out.println("Vehicle exited successfully.");
+            System.out.println("Vehicle Exited successfully!!\n");
         } else {
-            System.out.println("No vehicle found at that location.");
+            System.out.println("No vehicle found at that location.\n");
         }
     }
+
 
     private static void logVehicleEntry(String ownerName, String vehNo, Point locate) {
        try (PrintWriter pw = new PrintWriter(new FileWriter("log.txt", true))) {
@@ -218,7 +285,7 @@ System.out.println("Invalid choice.");
        } else {
            System.out.println("Currently parked vehicles:");
            for (Vehicle v : vehicles) {
-               System.out.printf("Type: %s, License Plate: %s, Owner: %s\n", v.getType(), v.getLicense_plate_no(), v.getOwner_name());
+               System.out.printf("Type: %s, \tLicense Plate: %s,\tOwner: %s\n", v.getType(), v.getLicense_plate_no(), v.getOwner_name());
            }
        }
     }
